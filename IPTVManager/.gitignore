@@ -1,0 +1,52 @@
+# Build directories
+build/
+cmake-build-*/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.user
+*.suo
+*.ncb
+*.sdf
+*.opensdf
+*.VC.db
+*.VC.opendb
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Qt files
+*.pro.user
+*.qbs.user
+.moc/
+.uic/
+.rcc/
+moc_*.cpp
+ui_*.h
+qrc_*.cpp
+
+# Compiled files
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+*.app
+
+# Database files (user data)
+*.db
+!resources/db_def.db
+
+# Config files (user data)
+*.ini
+!CMakePresets.json
+
+# Logs
+*.log
+logs/
