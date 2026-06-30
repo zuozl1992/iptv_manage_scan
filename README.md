@@ -26,16 +26,11 @@ IPTV/
 │   ├── tests/            # 单元测试
 │   ├── resources/        # 资源文件
 │   └── third_party/      # 第三方库
-├── IPTVScan/             # 频道扫描应用
-│   ├── main.cpp          # 程序入口
-│   ├── mainpage.*        # 主界面
-│   ├── mainthread.*      # 主线程
-│   └── scanthread.*      # 扫描线程
-├── ffmpeg/               # FFmpeg 预编译库
-└── release/              # 发布相关
-    ├── scripts/          # 构建脚本
-    ├── icons/            # 应用图标
-    └── output/           # 输出目录
+└── IPTVScan/             # 频道扫描应用
+    ├── main.cpp          # 程序入口
+    ├── mainpage.*        # 主界面
+    ├── mainthread.*      # 主线程
+    └── scanthread.*      # 扫描线程
 ```
 
 ## 功能特性
