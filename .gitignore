@@ -4,6 +4,7 @@ cmake-build-*/
 out/
 release/
 ffmpeg/
+.mimocode/
 
 # IDE files
 .vscode/
