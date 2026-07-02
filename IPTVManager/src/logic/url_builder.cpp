@@ -45,12 +45,18 @@ QStringList UrlBuilder::buildScanIps(const QString &groupAddress,
                                      const QString &port,
                                      const QStringList &existingIps)
 {
-    QStringList ips = expand(groupAddress);
+    QStringList prefixes = expand(groupAddress);
     QStringList result;
     
-    for (const QString &ip : ips) {
-        if (!existingIps.contains(ip)) {
-            result << ip + ":" + port;
+    for (const QString &prefix : prefixes) {
+        for (int j = 1; j <= 255; j++) {
+            QString ip = prefix + QString(".%1").arg(j);
+            if (existingIps.contains(ip))
+                continue;
+            if (port.isEmpty())
+                result << ip;
+            else
+                result << QString("%1:{%2}").arg(ip).arg(port);
         }
     }
     

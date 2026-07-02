@@ -22,7 +22,7 @@ bool ScanFileGenerator::generate(const QString &path, const QStringList &testUrl
         if (opts.fccEnabled && !opts.fccUrl.isEmpty()) {
             stream << "?fcc=" << opts.fccUrl;
         }
-        stream << "\n";
+        stream << "\r\n";
     }
     
     // Write scan IPs
@@ -31,7 +31,7 @@ bool ScanFileGenerator::generate(const QString &path, const QStringList &testUrl
         if (opts.fccEnabled && !opts.fccUrl.isEmpty()) {
             stream << "?fcc=" << opts.fccUrl;
         }
-        stream << "\n";
+        stream << "\r\n";
     }
     
     file.close();

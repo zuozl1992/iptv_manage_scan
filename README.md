@@ -7,7 +7,7 @@
 本项目包含两个核心应用：
 
 - **IPTVManager** - IPTV 频道管理工具，支持频道导入导出、流媒体探测、视频预览等功能
-- **IPTVScan** - IPTV 频道扫描工具，用于批量检测 IPTV 流媒体地址的可用性
+- **IPTVScanner** - IPTV 频道扫描工具，用于批量检测 IPTV 流媒体地址的可用性
 
 ## 项目截图
 
@@ -17,7 +17,7 @@
 
 ![iShot_2026-07-01_14.54.33](assets/iShot_2026-07-01_14.54.33.png)
 
-- Scan
+- Scanner
 
 ![iShot_2026-07-01_14.55.06](assets/iShot_2026-07-01_14.55.06.png)
 
@@ -38,11 +38,15 @@ IPTV/
 │   ├── tests/            # 单元测试
 │   ├── resources/        # 资源文件
 │   └── third_party/      # 第三方库
-└── IPTVScan/             # 频道扫描应用
-    ├── main.cpp          # 程序入口
-    ├── mainpage.*        # 主界面
-    ├── mainthread.*      # 主线程
-    └── scanthread.*      # 扫描线程
+└── IPTVScanner/          # 频道扫描应用
+    ├── src/              # 源代码
+    │   ├── core/         # 配置 + 日志模块
+    │   ├── multimedia/   # FFmpeg 流探测
+    │   ├── logic/        # 业务逻辑（URL展开、扫描服务）
+    │   ├── platform/     # 平台抽象
+    │   └── ui/           # 界面层
+    ├── tests/            # 单元测试
+    └── resources/        # 资源文件
 ```
 
 ## 功能特性
@@ -55,13 +59,15 @@ IPTV/
 - **数据库存储**：SQLite 数据库存储频道信息
 - **多平台支持**：Windows、macOS、Linux
 
-### IPTVScan
+### IPTVScanner
 
 - **批量扫描**：支持批量扫描 IPTV 流媒体地址
-- **多线程**：可配置并发线程数量
+- **多线程**：可配置并发线程数量（1-128）
 - **地址模板**：支持带范围的地址模板（如 `239.49.{[1-255]}:{6000#[8000-9999]}`）
-- **实时进度**：显示扫描进度和结果
+- **实时进度**：显示扫描进度和成功/失败统计
 - **结果导出**：支持将扫描结果导出为 TXT 文件
+- **IP去重**：发现相同IP已有成功地址后自动跳过后续
+- **精细扫描**：EIO错误时减半超时重试
 
 ## 构建要求
 
@@ -108,6 +114,34 @@ sudo apt update
 sudo apt install cmake qt6-base-dev libavformat-dev libavutil-dev libavcodec-dev libswscale-dev
 ```
 
+## 构建与测试
+
+### 构建项目
+
+```bash
+# IPTVManager
+cd IPTVManager
+cmake -B build
+cmake --build build
+
+# IPTVScanner
+cd IPTVScanner
+cmake -B build
+cmake --build build
+```
+
+### 运行测试
+
+```bash
+# IPTVManager
+cd IPTVManager/build
+ctest --output-on-failure
+
+# IPTVScanner
+cd IPTVScanner/build
+ctest --output-on-failure
+```
+
 ## 使用说明
 
 ### IPTVManager
@@ -117,7 +151,7 @@ sudo apt install cmake qt6-base-dev libavformat-dev libavutil-dev libavcodec-dev
 3. **探测流媒体**：选择频道后点击探测按钮检测可用性
 4. **导出频道**：支持导出为多种格式
 
-### IPTVScan
+### IPTVScanner
 
 1. **输入地址**：在地址栏输入 IPTV 流媒体地址模板
 2. **配置参数**：设置线程数量、超时时间等
@@ -127,7 +161,7 @@ sudo apt install cmake qt6-base-dev libavformat-dev libavutil-dev libavcodec-dev
 
 ### 地址模板语法
 
-IPTVScan 支持复杂的地址模板：
+IPTVScanner 支持复杂的地址模板：
 
 - **单个值**：`1` 表示单个值
 - **多个值**：`1#3` 表示 1 和 3
@@ -140,44 +174,6 @@ IPTVScan 支持复杂的地址模板：
 http://192.168.1.1:12345/udp/239.49.0.{[1-255]}:{6000#[8000-9999]}
 ```
 
-## 测试
-
-### IPTVManager 单元测试
-
-```bash
-cd IPTVManager
-cmake -B build -DBUILD_TESTS=ON
-cmake --build build
-cd build && ctest
-```
-
-## 发布
-
-### 打包应用
-
-```bash
-cd release/scripts
-
-# 打包所有应用
-./deploy_macos.sh all
-
-# 打包单个应用
-./deploy_macos.sh iptvmanager
-./deploy_macos.sh iptvscan
-```
-
-### 输出目录
-
-```
-release/output/
-├── IPTVManager/
-│   ├── IPTVManager.app
-│   └── IPTVManager_vX.Y.Z_YYYYMMDD.dmg
-└── IPTVScan/
-    ├── IPTVScan.app
-    └── IPTVScan_vX.Y_YYYYMMDD.dmg
-```
-
 ## 版本历史
 
 ### IPTVManager v2.0.0 (2026-06-30)
@@ -188,15 +184,37 @@ release/output/
 - 仓库模式数据库访问
 - FFmpeg 自动发现
 
-### IPTVScan v1.0.0 (2026-06-30)
+### IPTVScanner v2.0.0 (2026-07-02)
 
-- IPTV 频道扫描功能
-- FFmpeg 流媒体检测
-- Qt6 Widgets 界面
+- 模块化架构重构（参考 IPTVManager）
+- 5 个独立模块：core, multimedia, logic, platform, ui
+- QSemaphore 替代轮询式线程管理
+- FFmpeg 自动发现（FindFFmpeg.cmake）
+- 单元测试框架
+- 中文界面支持
+
+## 开发工具
+
+### MiMo Code
+
+本项目使用 MiMoCode 进行开发，MiMoCode 是一个交互式 CLI 工具，帮助用户完成软件工程任务。
+
+- **代码重构**：IPTVManager、IPTVScanner 的模块化架构重构由 MiMoCode 辅助完成
+- **测试生成**：单元测试和集成测试用例由 MiMoCode 生成
+- **文档编写**：项目文档由 MiMoCode 辅助编写
+
+### mimo-v2.5-pro
+
+本项目使用小米自研的 **mimo-v2.5-pro** 大模型进行代码生成和优化：
+
+- **模型名称**：mimo-v2.5-pro
+- **模型ID**：xiaomi/mimo-v2.5-pro
+- **开发商**：小米 MiMo 团队
+- **应用场景**：代码生成、代码重构、测试用例生成、文档编写
 
 ## 许可证
 
-[待定]
+本项目采用 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0.html) 开源许可证。
 
 ## 贡献
 
@@ -204,4 +222,4 @@ release/output/
 
 ## 联系方式
 
-[待定]
+zuozl1992@foxmail.com
