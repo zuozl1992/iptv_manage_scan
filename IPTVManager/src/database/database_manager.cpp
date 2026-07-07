@@ -25,6 +25,7 @@ bool DatabaseManager::open()
         return true;
     }
     
+    //添加SQLite数据库连接
     m_db = QSqlDatabase::addDatabase("QSQLITE");
     m_db.setDatabaseName(m_dbPath);
     
@@ -33,7 +34,7 @@ bool DatabaseManager::open()
         return false;
     }
     
-    // Enable foreign keys
+    //启用外键约束
     QSqlQuery query(m_db);
     query.exec("PRAGMA foreign_keys = ON");
     
@@ -57,22 +58,22 @@ bool DatabaseManager::resetToDefault()
 {
     close();
     
-    // Remove existing database
+    //删除现有数据库文件
     if (QFile::exists(m_dbPath)) {
         QFile::remove(m_dbPath);
     }
     
-    // Copy default database from resources
+    //从资源文件复制默认数据库
     QString defaultDb = ":/db_def.db";
     if (!QFile::copy(defaultDb, m_dbPath)) {
         qCritical() << "Failed to copy default database";
         return false;
     }
     
-    // Set permissions
+    //设置文件权限
     QFile::setPermissions(m_dbPath, QFile::ReadOwner | QFile::WriteOwner);
     
-    // Reopen
+    //重新打开数据库
     return open();
 }
 

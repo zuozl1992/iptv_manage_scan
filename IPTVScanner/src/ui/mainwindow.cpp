@@ -33,6 +33,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupConnections()
 {
+    //连接扫描结果信号
     connect(m_scanService, &Logic::ScanService::scanResult,
             this, [this](const Multimedia::StreamInfo &info) {
                 m_resultModel->addResult(info);
@@ -48,6 +49,7 @@ void MainWindow::setupConnections()
 
 void MainWindow::onScanResult(const QString &url, int width, int height, int fps)
 {
+    //格式化扫描结果日志
     QString log;
     if (ui->cbAddTS->isChecked())
         log = QString("待整理 TS %1x%2(%3),%4").arg(width).arg(height).arg(fps).arg(url);
@@ -81,6 +83,7 @@ void MainWindow::on_btnStart_clicked()
     if (r != QMessageBox::Yes)
         return;
 
+    //验证URL模板是否有效
     QStringList urls;
     bool ok = false;
     if (ui->rbUseUrl->isChecked())
@@ -93,21 +96,25 @@ void MainWindow::on_btnStart_clicked()
         return;
     }
 
+    //展开URL模板
     if (ui->rbUseUrl->isChecked())
         urls = Logic::UrlBuilder::expand(ui->leURL->text());
     else
         urls = Logic::UrlBuilder::expandFromFile(ui->leURL->text());
 
+    //清空上次结果
     ui->tbLog->clear();
     m_resultModel->clear();
     m_resultList.clear();
 
+    //配置扫描服务参数
     m_scanService->setUrlList(urls);
     m_scanService->setTimeout(ui->sbTimeout->value());
     m_scanService->setThreadMax(ui->sbThMax->value());
     m_scanService->setAutoStep(ui->cbAutoStep->isChecked());
     m_scanService->setSlowScan(ui->cbSlowScan->isChecked());
 
+    //重置界面状态
     ui->lbStatus->setText("");
     ui->lbStatus2->setText("--");
     ui->progressBar->setValue(0);
@@ -131,6 +138,7 @@ void MainWindow::on_btnClear_clicked()
 
 void MainWindow::on_btnSave_clicked()
 {
+    //保存扫描结果到文件
     QString path = QFileDialog::getSaveFileName(
         this, tr("保存文件"), "", "txt(*.txt)");
     if (path.isEmpty())
@@ -144,6 +152,7 @@ void MainWindow::on_btnSave_clicked()
 
 void MainWindow::on_btnOpenFile_clicked()
 {
+    //选择URL模板文件
     QString path = QFileDialog::getOpenFileName(
         this, tr("选择文件"), "", tr("model file(*.txt)"));
     if (path.isEmpty())
@@ -162,6 +171,7 @@ void MainWindow::on_btnRestore_clicked()
     if (r != QMessageBox::Yes)
         return;
 
+    //恢复默认界面配置
     ui->leURL->setText("http://192.168.1.1:12345/udp/239.49.0.{[1-255]}:{6000#[8000-9999]}");
     ui->progressBar->setValue(0);
     ui->lbProgress->setText("0/0");
@@ -189,6 +199,7 @@ void MainWindow::loadConfig()
 {
     Core::AppConfig *config = Core::AppConfig::instance();
 
+    //从配置加载值到界面控件
     ui->leURL->setText(config->scanUrl());
     ui->sbThMax->setValue(config->threadMax());
     ui->sbTimeout->setValue(config->timeout());
@@ -201,7 +212,7 @@ void MainWindow::loadConfig()
     else
         ui->rbUseFile->setChecked(true);
 
-    // Save config immediately to ensure defaults are written to disk on first run
+    //首次运行时确保默认值写入磁盘
     saveConfig();
 }
 
@@ -209,6 +220,7 @@ void MainWindow::saveConfig()
 {
     Core::AppConfig *config = Core::AppConfig::instance();
 
+    //保存界面配置值
     config->setScanUrl(ui->leURL->text());
     config->setThreadMax(ui->sbThMax->value());
     config->setTimeout(ui->sbTimeout->value());
@@ -220,6 +232,7 @@ void MainWindow::saveConfig()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    //关闭前确认扫描状态
     if (m_scanService->isRunning()) {
         QMessageBox::StandardButton r = QMessageBox::question(this, tr("提示"),
                                                               tr("扫描正在进行中，确认退出？"));

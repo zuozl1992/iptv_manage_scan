@@ -9,9 +9,10 @@ QStringList UrlBuilder::expand(const QString &templ)
     QStringList result;
     result << templ;
     
-    // Find {...} patterns and expand them
+    //匹配花括号表达式{...}
     QRegularExpression re("\\{([^}]+)\\}");
     
+    //循环展开所有嵌套的花括号表达式
     while (true) {
         bool expanded = false;
         QStringList newResult;
@@ -23,6 +24,7 @@ QStringList UrlBuilder::expand(const QString &templ)
                 QString pattern = match.captured(1);
                 QStringList expandedValues = expandRange(pattern);
                 
+                //替换匹配位置为展开后的值
                 for (const QString &value : expandedValues) {
                     QString newStr = str;
                     newStr.replace(match.capturedStart(), match.capturedLength(), value);
@@ -45,12 +47,15 @@ QStringList UrlBuilder::buildScanIps(const QString &groupAddress,
                                      const QString &port,
                                      const QStringList &existingIps)
 {
+    //展开组播地址模板获取IP前缀
     QStringList prefixes = expand(groupAddress);
     QStringList result;
     
+    //对每个前缀遍历1-255生成完整IP
     for (const QString &prefix : prefixes) {
         for (int j = 1; j <= 255; j++) {
             QString ip = prefix + QString(".%1").arg(j);
+            //过滤数据库中已存在的IP
             if (existingIps.contains(ip))
                 continue;
             if (port.isEmpty())
@@ -68,8 +73,7 @@ QStringList UrlBuilder::buildTestUrls(const QString &port,
 {
     Q_UNUSED(port)
     Q_UNUSED(existingIps)
-    // This would need to query the database for test URLs
-    // Implementation depends on database access
+    //需要查询数据库获取测试频道URL
     return {};
 }
 
@@ -77,12 +81,12 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
 {
     QStringList result;
     
-    // Check for comma-separated values
+    //检查是否为#分隔的多值表达式
     if (pattern.contains("#")) {
         return pattern.split("#");
     }
     
-    // Check for range pattern: start-end
+    //检查是否为范围表达式：start-end
     QRegularExpression rangeRe("^(\\d+)-(\\d+)$");
     QRegularExpressionMatch rangeMatch = rangeRe.match(pattern);
     
@@ -90,7 +94,7 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
         int start = rangeMatch.captured(1).toInt();
         int end = rangeMatch.captured(2).toInt();
         
-        // Check for zero-padding
+        //检测是否需要前导零填充
         int padLength = 0;
         if (pattern.startsWith("0") || pattern.contains("-0")) {
             padLength = qMax(rangeMatch.captured(1).length(),
@@ -108,7 +112,7 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
         return result;
     }
     
-    // Single value
+    //单个值直接返回
     result << pattern;
     return result;
 }

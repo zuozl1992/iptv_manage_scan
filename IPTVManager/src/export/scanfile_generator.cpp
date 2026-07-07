@@ -16,7 +16,7 @@ bool ScanFileGenerator::generate(const QString &path, const QStringList &testUrl
     
     QTextStream stream(&file);
     
-    // Write test URLs
+    //写入测试频道URL
     for (const QString &ip : testUrls) {
         stream << opts.urlPrefix << "/" << opts.urlType << "/" << ip;
         if (opts.fccEnabled && !opts.fccUrl.isEmpty()) {
@@ -25,7 +25,7 @@ bool ScanFileGenerator::generate(const QString &path, const QStringList &testUrl
         stream << "\r\n";
     }
     
-    // Write scan IPs
+    //写入待扫描的IP地址
     for (const QString &ip : scanIps) {
         stream << opts.urlPrefix << "/" << opts.urlType << "/" << ip;
         if (opts.fccEnabled && !opts.fccUrl.isEmpty()) {

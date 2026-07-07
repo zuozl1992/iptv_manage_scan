@@ -19,6 +19,7 @@ void ChannelTableModel::sortById()
 
 void ChannelTableModel::sortByIp()
 {
+    //按IP自然排序（使用json_extract实现四段IP的数值排序）
     executeQuery("ORDER BY json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[0]'), "
                  "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[1]'), "
                  "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[2]'), "
@@ -52,6 +53,7 @@ void ChannelTableModel::sortByType()
 
 void ChannelTableModel::executeQuery(const QString &orderBy)
 {
+    //构建联表查询SQL
     QString sql = "SELECT ti.id, ti.name, ti.\"group\", tsi.ip, tsi.port, "
                   "tsi.width, tsi.height, tsi.fps, st.name as type, tsi.notes "
                   "FROM tv_info ti "
@@ -64,6 +66,7 @@ void ChannelTableModel::executeQuery(const QString &orderBy)
     
     setQuery(sql);
     
+    //设置中文列标题
     setHeaderData(0, Qt::Horizontal, "ID");
     setHeaderData(1, Qt::Horizontal, "频道");
     setHeaderData(2, Qt::Horizontal, "分组");

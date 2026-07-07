@@ -12,6 +12,7 @@ double r2d(AVRational r)
 
 int inferSourceType(int width)
 {
+    //根据视频宽度推断源类型
     if (width > 7000) return 4;  // 8K
     if (width > 3000) return 3;  // 4K
     if (width > 1000) return 2;  // HD

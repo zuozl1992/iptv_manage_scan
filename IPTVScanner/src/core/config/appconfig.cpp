@@ -10,6 +10,7 @@ AppConfig *AppConfig::s_instance = nullptr;
 
 AppConfig *AppConfig::instance()
 {
+    //单例模式：延迟初始化
     if (!s_instance) {
         s_instance = new AppConfig();
     }
@@ -27,6 +28,7 @@ void AppConfig::init(const QString &configPath)
     if (m_settings) {
         delete m_settings;
     }
+    //确保配置目录存在
     QFileInfo fileInfo(configPath);
     QDir().mkpath(fileInfo.absolutePath());
     m_settings = new QSettings(configPath, QSettings::IniFormat, this);

@@ -26,12 +26,14 @@ bool VideoDecoder::open(const QString &url)
 {
     close();
     
+    //打开流媒体输入
     int ret = avformat_open_input(&m_formatCtx, url.toStdString().c_str(), nullptr, nullptr);
     if (ret != 0) {
         qWarning() << "Failed to open stream:" << url;
         return false;
     }
     
+    //获取流信息
     ret = avformat_find_stream_info(m_formatCtx, nullptr);
     if (ret < 0) {
         qWarning() << "Failed to find stream info";
@@ -46,17 +48,18 @@ bool VideoDecoder::findVideoStream()
 {
     if (!m_formatCtx) return false;
     
+    //查找最佳视频流
     m_videoStreamIndex = av_find_best_stream(m_formatCtx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
     if (m_videoStreamIndex < 0) {
         qWarning() << "No video stream found";
         return false;
     }
     
-    // Get FPS
+    //获取帧率
     m_streamInfo.fps = static_cast<int>(FfmpegUtils::r2d(
         m_formatCtx->streams[m_videoStreamIndex]->avg_frame_rate));
     
-    // Find decoder
+    //查找解码器
     const AVCodec *codec = avcodec_find_decoder(
         m_formatCtx->streams[m_videoStreamIndex]->codecpar->codec_id);
     if (!codec) {
@@ -64,14 +67,14 @@ bool VideoDecoder::findVideoStream()
         return false;
     }
     
-    // Allocate codec context
+    //分配编解码器上下文
     m_codecCtx = avcodec_alloc_context3(codec);
     if (!m_codecCtx) {
         qWarning() << "Failed to allocate codec context";
         return false;
     }
     
-    // Copy parameters
+    //复制编解码参数
     int ret = avcodec_parameters_to_context(m_codecCtx,
         m_formatCtx->streams[m_videoStreamIndex]->codecpar);
     if (ret < 0) {
@@ -79,14 +82,14 @@ bool VideoDecoder::findVideoStream()
         return false;
     }
     
-    // Open codec
+    //打开编解码器
     ret = avcodec_open2(m_codecCtx, codec, nullptr);
     if (ret != 0) {
         qWarning() << "Failed to open codec";
         return false;
     }
     
-    // Allocate frame
+    //分配帧缓冲区
     m_frame = av_frame_alloc();
     if (!m_frame) {
         qWarning() << "Failed to allocate frame";
@@ -104,14 +107,14 @@ bool VideoDecoder::decodeKeyFrame()
 {
     if (!m_formatCtx || !m_codecCtx || !m_frame) return false;
     
-    // Read packets and decode keyframe
+    //读取数据包并解码关键帧
     for (int attempt = 0; attempt < 10; ++attempt) {
         QList<AVPacket *> packets;
         int count = 500;
         int keyFrames = 0;
         int nonKeyAfterKey = 0;
         
-        // Read packets
+        //读取数据包
         while (count-- > 0) {
             AVPacket *pkt = av_packet_alloc();
             if (!pkt) break;
@@ -122,13 +125,13 @@ bool VideoDecoder::decodeKeyFrame()
                 break;
             }
             
-            // Skip non-video packets
+            //跳过非视频包
             if (pkt->stream_index != m_videoStreamIndex) {
                 av_packet_free(&pkt);
                 continue;
             }
             
-            // First pass: skip until keyframe
+            //首次尝试：跳过非关键帧
             if (packets.isEmpty() && attempt == 0) {
                 if (!(pkt->flags & AV_PKT_FLAG_KEY)) {
                     av_packet_free(&pkt);
@@ -136,14 +139,14 @@ bool VideoDecoder::decodeKeyFrame()
                 }
             }
             
-            // Count keyframes
+            //统计关键帧数量
             if (pkt->flags & AV_PKT_FLAG_KEY) {
                 keyFrames++;
             } else {
                 nonKeyAfterKey++;
             }
             
-            // Insert sorted by DTS
+            //按DTS排序插入
             int i = 0;
             for (; i < packets.size(); ++i) {
                 if (pkt->dts < packets.at(i)->dts) break;
@@ -156,7 +159,7 @@ bool VideoDecoder::decodeKeyFrame()
         
         if (packets.isEmpty()) continue;
         
-        // Decode packets, looking for keyframe
+        //解码数据包，查找关键帧
         AVFrame *decodedFrame = nullptr;
         while (!packets.isEmpty()) {
             AVPacket *pkt = packets.first();
@@ -176,7 +179,7 @@ bool VideoDecoder::decodeKeyFrame()
                     break;
                 }
                 
-                // Skip non-keyframes and corrupt frames
+                //跳过非关键帧和损坏帧
                 if (!(decodedFrame->flags & AV_FRAME_FLAG_KEY) ||
                     (decodedFrame->flags & AV_FRAME_FLAG_CORRUPT)) {
                     av_frame_free(&decodedFrame);
@@ -190,7 +193,7 @@ bool VideoDecoder::decodeKeyFrame()
             if (decodedFrame) break;
         }
         
-        // Clean up remaining packets
+        //清理剩余数据包
         while (!packets.isEmpty()) {
             AVPacket *pkt = packets.first();
             packets.removeFirst();
@@ -198,7 +201,7 @@ bool VideoDecoder::decodeKeyFrame()
         }
         
         if (decodedFrame) {
-            // Convert to BGRA
+            //创建像素格式转换上下文（转为BGRA）
             SwsContext *swsCtx = sws_getContext(
                 m_streamInfo.width, m_streamInfo.height,
                 static_cast<AVPixelFormat>(decodedFrame->format),
@@ -210,7 +213,7 @@ bool VideoDecoder::decodeKeyFrame()
                 return false;
             }
             
-            // Allocate output buffer
+            //分配输出缓冲区
             freeFrameData();
             m_frameData = new uchar[m_streamInfo.width * m_streamInfo.height * 4];
             
@@ -220,6 +223,7 @@ bool VideoDecoder::decodeKeyFrame()
             int linesize[AV_NUM_DATA_POINTERS] = {0};
             linesize[0] = m_streamInfo.width * 4;
             
+            //执行像素格式转换
             int h = sws_scale(swsCtx, decodedFrame->data, decodedFrame->linesize,
                               0, decodedFrame->height, data, linesize);
             
@@ -242,6 +246,7 @@ StreamInfo VideoDecoder::streamInfo() const
 
 uchar *VideoDecoder::takeFrameData()
 {
+    //转移帧数据所有权
     uchar *data = m_frameData;
     m_frameData = nullptr;
     return data;

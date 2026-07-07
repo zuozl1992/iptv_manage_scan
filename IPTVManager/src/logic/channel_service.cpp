@@ -69,12 +69,13 @@ int ChannelService::importFromTxt(const QString &filePath)
     int count = 0;
     int errCount = 0;
     
+    //逐行解析TXT文件
     while (!file.atEnd()) {
         QByteArray data = file.readLine();
         if (data.isEmpty())
             break;
         
-        // Remove newline characters
+        //移除换行符
         if (data.indexOf('\n') >= 0)
             data.removeLast();
         if (data.indexOf('\r') >= 0)
@@ -84,12 +85,12 @@ int ChannelService::importFromTxt(const QString &filePath)
         if (line.isEmpty())
             continue;
         
-        // Skip lines without comma
+        //跳过无逗号的行
         if (!line.contains(","))
             continue;
         
-        // Parse line: "name type resolution(fps),url"
-        // Example: "CCTV1 HD 1920x1080(25),http/udp/239.49.1.1:6000"
+        //解析行格式："频道名 类型 分辨率(帧率),URL"
+        //示例："CCTV1 HD 1920x1080(25),http/udp/239.49.1.1:6000"
         QStringList parts = line.split(",");
         if (parts.length() != 2) {
             errCount++;
@@ -99,7 +100,7 @@ int ChannelService::importFromTxt(const QString &filePath)
         QString namePart = parts.at(0).trimmed();
         QString url = parts.at(1).trimmed();
         
-        // Parse URL to get IP and port
+        //从URL中提取IP和端口
         int i = url.indexOf("udp");
         int j = url.indexOf("rtp");
         if (i < 0 && j < 0) {
@@ -112,18 +113,19 @@ int ChannelService::importFromTxt(const QString &filePath)
         QString ip = url.mid(start, end - start);
         int port = url.mid(end + 1).toInt();
         
-        // Parse name part: "name type resolution(fps)"
+        //解析名称部分："频道名 类型 分辨率(帧率)"
         QStringList nameParts = namePart.split(" ");
         if (nameParts.length() != 3) {
             errCount++;
             continue;
         }
         
+        //解析类型
         QString name = nameParts.at(0);
         QString typeStr = nameParts.at(1);
         int type = typeStr == "SD" ? 1 : typeStr == "HD" ? 2 : typeStr == "4K" ? 3 : typeStr == "8K" ? 4 : 0;
         
-        // Parse resolution and fps: "1920x1080(25)"
+        //解析分辨率和帧率："1920x1080(25)"
         QStringList resFpsParts = nameParts.at(2).split("(");
         if (resFpsParts.length() != 2) {
             errCount++;
@@ -143,7 +145,7 @@ int ChannelService::importFromTxt(const QString &filePath)
         int height = resParts.at(1).toInt();
         int fps = fpsStr.toInt();
         
-        // Get or create channel
+        //获取或创建频道
         int channelId = getOrCreateChannel(name);
         if (channelId < 0) {
             qWarning() << "Failed to create channel:" << name;
@@ -151,7 +153,7 @@ int ChannelService::importFromTxt(const QString &filePath)
             continue;
         }
         
-        // Create source
+        //创建信号源
         Database::TvSource source;
         source.tvId = channelId;
         source.ip = ip;

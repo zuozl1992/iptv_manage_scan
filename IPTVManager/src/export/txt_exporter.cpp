@@ -27,17 +27,17 @@ bool TxtExporter::exportToFile(const QString &path,
         
         if (channels.isEmpty()) continue;
         
-        // Group header
+        //写入分组标题行
         stream << groupName << ",#genre#\n";
         
-        // Channels
+        //写入频道数据
         for (const QJsonValue &val : channels) {
             QJsonObject ch = val.toObject();
             QString name = ch.value("name").toString();
             QString ip = ch.value("ip").toString();
             int port = ch.value("port").toInt();
             
-            // Skip duplicate channels if mergeChannels is enabled
+            //合并模式下跳过重复频道
             if (opts.mergeChannels) {
                 if (processedNames.contains(name)) {
                     continue;
@@ -45,6 +45,7 @@ bool TxtExporter::exportToFile(const QString &path,
                 processedNames.append(name);
             }
             
+            //构建流媒体URL
             QString url = QString("%1/%2/%3:%4")
                 .arg(opts.urlPrefix, opts.urlType, ip)
                 .arg(port);
@@ -56,7 +57,7 @@ bool TxtExporter::exportToFile(const QString &path,
             stream << name << "," << url << "\n";
         }
         
-        // Empty line between groups
+        //分组间空行分隔
         stream << "\n";
     }
     
@@ -78,23 +79,24 @@ bool TxtExporter::exportToFile(const QString &path,
     QTextStream stream(&file);
     QStringList processedNames;
     
+    //按指定分组顺序遍历
     for (const QString &groupName : groupOrder) {
         if (!groupedLists.contains(groupName)) continue;
         
         const QJsonArray &channels = groupedLists[groupName];
         if (channels.isEmpty()) continue;
         
-        // Group header
+        //写入分组标题行
         stream << groupName << ",#genre#\n";
         
-        // Channels
+        //写入频道数据
         for (const QJsonValue &val : channels) {
             QJsonObject ch = val.toObject();
             QString name = ch.value("name").toString();
             QString ip = ch.value("ip").toString();
             int port = ch.value("port").toInt();
             
-            // Skip duplicate channels if mergeChannels is enabled
+            //合并模式下跳过重复频道
             if (opts.mergeChannels) {
                 if (processedNames.contains(name)) {
                     continue;
@@ -102,6 +104,7 @@ bool TxtExporter::exportToFile(const QString &path,
                 processedNames.append(name);
             }
             
+            //构建流媒体URL
             QString url = QString("%1/%2/%3:%4")
                 .arg(opts.urlPrefix, opts.urlType, ip)
                 .arg(port);
@@ -113,7 +116,7 @@ bool TxtExporter::exportToFile(const QString &path,
             stream << name << "," << url << "\n";
         }
         
-        // Empty line between groups
+        //分组间空行分隔
         stream << "\n";
     }
     

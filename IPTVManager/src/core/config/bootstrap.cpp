@@ -14,6 +14,7 @@ Bootstrap::Bootstrap()
         appName = "IPTVManager";
     }
     
+    //引导文件存储在应用配置目录
     QString basePath = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     m_bootstrapPath = basePath + "/" + appName + "_iptv_paths.ini";
 }
@@ -44,6 +45,7 @@ bool Bootstrap::isValid() const
         return false;
     }
     
+    //检查配置文件和数据库文件是否存在
     return QFile::exists(m_configPath) && QFile::exists(m_dbPath);
 }
 
@@ -53,6 +55,7 @@ bool Bootstrap::load()
         return false;
     }
     
+    //从引导文件读取路径配置
     QSettings settings(m_bootstrapPath, QSettings::IniFormat);
     m_configPath = settings.value("paths/config").toString();
     m_dbPath = settings.value("paths/db").toString();
@@ -67,6 +70,7 @@ bool Bootstrap::save() const
         dir.mkpath(".");
     }
     
+    //保存路径配置到引导文件
     QSettings settings(m_bootstrapPath, QSettings::IniFormat);
     settings.setValue("paths/config", m_configPath);
     settings.setValue("paths/db", m_dbPath);

@@ -8,6 +8,7 @@ SourceTableModel::SourceTableModel(QObject *parent, QSqlDatabase db)
     setTable("tv_info");
     setEditStrategy(QSqlTableModel::OnFieldChange);
     
+    //设置中文列标题
     setHeaderData(0, Qt::Horizontal, "ID");
     setHeaderData(1, Qt::Horizontal, "频道");
     setHeaderData(2, Qt::Horizontal, "分组");

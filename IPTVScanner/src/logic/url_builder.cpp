@@ -8,26 +8,28 @@ namespace Iptv::Logic {
 QStringList UrlBuilder::expand(const QString &templ)
 {
     QString temp = templ;
+    //限制最多3层花括号嵌套
     if (temp.split("{").length() > 4)
         return {};
 
     int sIndex = temp.indexOf("{");
     int eIndex = temp.indexOf("}");
     if (sIndex < 0 && eIndex < 0) {
-        // No braces - treat the whole string as a single pattern
-        // This handles cases like "1#3#[5-7]" directly
+        //无花括号：直接作为单个模式展开
         QStringList expanded = expandRange(temp);
         return expanded;
     } else if (sIndex < 0 || eIndex < 0 || eIndex <= sIndex) {
         return {};
     }
 
+    //展开花括号内的范围表达式
     QStringList strList = expandRange(temp.mid(sIndex + 1, eIndex - sIndex - 1));
     QString a = temp.mid(0, sIndex);
     QString b = temp.mid(eIndex + 1);
 
     QStringList result;
     if (b.indexOf("{") >= 0) {
+        //递归展开后续的花括号表达式
         QStringList tre = expand(b);
         if (tre.isEmpty())
             return {};
@@ -56,6 +58,7 @@ QStringList UrlBuilder::expandFromFile(const QString &filePath)
     if (!file.open(QIODevice::ReadOnly))
         return {};
 
+    //逐行读取模板文件并展开
     QStringList result;
     while (true) {
         QByteArray data = file.readLine();
@@ -75,32 +78,27 @@ QStringList UrlBuilder::expandFromFile(const QString &filePath)
 
 QString UrlBuilder::getIpFromUrl(const QString &url)
 {
-    // Handle udp:// and rtp:// schemes - extract IP after the scheme
-    // "udp://239.49.0.1:6000" -> "239.49.0.1"
-    // "rtp://239.49.0.1:6000" -> "239.49.0.1"
-    // "http://192.168.1.1:12345/udp/239.49.0.1:6000" -> "239.49.0.1"
-    
-    // First check for udp:// or rtp:// at the beginning
+    //处理udp://和rtp://协议
     if (url.startsWith("udp://") || url.startsWith("rtp://")) {
-        int start = 6; // Skip "udp://" or "rtp://"
+        int start = 6; //跳过"udp://"或"rtp://"
         int end = url.indexOf(":", start);
         if (end > start) {
             return url.mid(start, end - start);
         }
     }
     
-    // For URLs like "http://.../udp/..." or "http://.../rtp/..."
+    //处理http://.../udp/...格式
     int i1 = url.indexOf("/udp/");
     int i2 = url.indexOf("/rtp/");
     if (i1 >= 0 || i2 >= 0) {
-        int start = (i1 < 0 ? i2 : i1) + 5; // Skip "/udp/" or "/rtp/"
+        int start = (i1 < 0 ? i2 : i1) + 5; //跳过"/udp/"或"/rtp/"
         int end = url.indexOf(":", start);
         if (end > start) {
             return url.mid(start, end - start);
         }
     }
     
-    // Fallback: try to find IP pattern after "://"
+    //回退：尝试从"://"后提取
     int schemeEnd = url.indexOf("://");
     if (schemeEnd >= 0) {
         int start = schemeEnd + 3;
@@ -117,12 +115,12 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
 {
     QStringList result;
 
-    // Check for # separated values (may contain ranges)
+    //检查是否为#分隔的多值表达式（可包含范围）
     if (pattern.contains("#")) {
         QStringList parts = pattern.split("#");
         for (const QString &part : parts) {
             if (part.startsWith("[")) {
-                // Range pattern within mixed notation
+                //混合记法中的范围模式
                 QString r = part.mid(1, part.length() - 2);
                 QStringList rl = r.remove(QRegularExpression("\\s")).split("-");
                 if (rl.length() != 2)
@@ -141,7 +139,7 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
         return result;
     }
 
-    // Check for range pattern: [start-end]
+    //检查是否为范围模式：[start-end]
     if (pattern.startsWith("[")) {
         QString r = pattern.mid(1, pattern.length() - 2);
         QStringList rl = r.remove(QRegularExpression("\\s")).split("-");
@@ -157,7 +155,7 @@ QStringList UrlBuilder::expandRange(const QString &pattern)
         return result;
     }
 
-    // Single value
+    //单个值直接返回
     result << pattern;
     return result;
 }

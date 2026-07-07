@@ -24,6 +24,7 @@ void LogoFetcher::onReplyFinished()
     
     if (reply->error() == QNetworkReply::NoError) {
         QPixmap pixmap;
+        //从网络数据加载图片
         if (pixmap.loadFromData(reply->readAll())) {
             emit imageReady(pixmap);
         } else {

@@ -45,6 +45,7 @@ void StreamProbe::run()
     int timeout = m_timeout;
 
 L1:
+    //打开流媒体输入（超时10000ms时不设置超时参数）
     if (timeout == 10000) {
         ret = avformat_open_input(&ctx, m_url.toStdString().c_str(), nullptr, nullptr);
     } else {
@@ -58,6 +59,7 @@ L1:
         qDebug() << "Failed to open" << m_url << "error:" << errorBuf;
         avformat_close_input(&ctx);
 
+        //EIO错误且启用慢速扫描时，减半超时重试
         if (retryCount-- > 0 && ret == -5 && m_slowScan) {
             timeout /= 2;
             goto L1;
@@ -67,6 +69,7 @@ L1:
         return;
     }
 
+    //获取流信息
     ret = avformat_find_stream_info(ctx, nullptr);
     if (ret < 0) {
         av_strerror(ret, errorBuf, sizeof(errorBuf));
@@ -76,6 +79,7 @@ L1:
         return;
     }
 
+    //查找最佳视频流
     int vIndex = av_find_best_stream(ctx, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
     if (vIndex < 0) {
         av_strerror(vIndex, errorBuf, sizeof(errorBuf));
@@ -85,6 +89,7 @@ L1:
         return;
     }
 
+    //提取流信息
     StreamInfo info;
     info.url = m_url;
     info.width = ctx->streams[vIndex]->codecpar->width;

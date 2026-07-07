@@ -20,6 +20,7 @@ QPixmap HttpClient::fetchImageSync(const QUrl &url)
 {
     QNetworkReply *reply = get(url);
     
+    //使用事件循环同步等待响应完成
     QEventLoop loop;
     connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
     loop.exec();

@@ -40,7 +40,7 @@
 #include <QDir>
 #include <QCoreApplication>
 
-// Custom delegate for rich text rendering in combo box
+//自定义委托：在下拉框中渲染富文本（加粗频道名）
 class RichTextDelegate : public QStyledItemDelegate
 {
 public:
@@ -137,14 +137,14 @@ MainWindow::MainWindow(const QString &configPath, const QString &dbPath,
     setWindowTitle("IPTV管理");
     resize(880, 650);
     
-    // Initialize logging
+    //初始化日志系统
     Core::LogManager::init();
     
-    // Initialize config
+    //初始化配置管理
     m_config = Core::AppConfig::instance();
     m_config->init(configPath);
     
-    // Initialize database
+    //初始化数据库连接
     m_dbManager = new Database::DatabaseManager(dbPath, this);
     if (!m_dbManager->open()) {
         QMessageBox::critical(this, tr("错误"), tr("无法打开数据库"));
@@ -154,28 +154,28 @@ MainWindow::MainWindow(const QString &configPath, const QString &dbPath,
     m_channelRepo = new Database::ChannelRepository(m_dbManager->database());
     m_sourceRepo = new Database::SourceRepository(m_dbManager->database());
     
-    // Initialize network
+    //初始化网络组件
     m_httpClient = new Network::HttpClient(this);
     m_logoFetcher = new Network::LogoFetcher(m_httpClient, this);
     
-    // Initialize multimedia
+    //初始化多媒体组件
     m_streamProbe = new Multimedia::StreamProbe(this);
     
-    // Initialize export
+    //初始化导出组件
     m_xlsxExporter = new Export::XlsxExporter(this);
     
-    // Initialize logic
+    //初始化业务服务
     m_channelService = new Logic::ChannelService(m_channelRepo, m_sourceRepo, this);
     m_checkService = new Logic::CheckService(m_streamProbe, m_sourceRepo, m_channelRepo, this);
     
-    // Initialize models
+    //初始化数据模型
     m_queryModel = m_sourceRepo->createJoinedTableModel(this);
     m_tableModel = new QSqlTableModel(this, *m_dbManager->database());
     m_tableModel->setTable("tv_info");
-    m_tableModel->setSort(1, Qt::AscendingOrder);  // Sort by channel_id
+    m_tableModel->setSort(1, Qt::AscendingOrder);  //按频道ID排序
     m_tableModel->select();
     
-    // Setup UI
+    //初始化界面
     ui->pbExp->hide();
     ui->tabWidget->setCurrentIndex(0);
     
@@ -192,17 +192,17 @@ MainWindow::~MainWindow()
 
 void MainWindow::setupConnections()
 {
-    // Table header sorting
+    //表格表头双击排序
     connect(ui->tvMain->horizontalHeader(), &QHeaderView::sectionDoubleClicked,
             this, &MainWindow::onMainTableHeaderDoubleClicked);
     connect(ui->tvChannel->horizontalHeader(), &QHeaderView::sectionDoubleClicked,
             this, &MainWindow::onChannelTableHeaderDoubleClicked);
     
-    // ComboBox connections
+    //下拉框信号
     connect(ui->cbCheckAddress, QOverload<int>::of(&QComboBox::currentIndexChanged),
             this, &MainWindow::on_cbCheckAddress_currentIndexChanged);
     
-    // Stream probe signals
+    //流探测信号
     connect(m_streamProbe, &Multimedia::StreamProbe::progressChanged,
             this, &MainWindow::onStreamProgress);
     connect(m_streamProbe, &Multimedia::StreamProbe::probeSucceeded,
@@ -210,33 +210,33 @@ void MainWindow::setupConnections()
     connect(m_streamProbe, &Multimedia::StreamProbe::probeFailed,
             this, &MainWindow::onStreamFailed);
     
-    // Export signals
+    //导出信号
     connect(m_xlsxExporter, &Export::XlsxExporter::progressChanged,
             this, &MainWindow::onExportProgress);
     
-    // Logo signals
+    //台标信号
     connect(m_logoFetcher, &Network::LogoFetcher::imageReady,
             this, &MainWindow::onLogoReady);
     connect(m_logoFetcher, &Network::LogoFetcher::fetchFailed,
             this, &MainWindow::onLogoFailed);
     
-    // Timer
+    //定时器
     connect(m_hideTimer, &QTimer::timeout, this, &MainWindow::onHideTimerTimeout);
 }
 
 void MainWindow::initModels()
 {
-    // Setup main table
+    //配置主表格
     ui->tvMain->setModel(m_queryModel);
     ui->tvMain->setColumnHidden(0, true);
     ui->tvMain->horizontalHeader()->setStretchLastSection(true);
     
-    // Setup channel table
+    //配置频道表格
     ui->tvChannel->setModel(m_tableModel);
     ui->tvChannel->setColumnHidden(0, true);
     ui->tvChannel->horizontalHeader()->setStretchLastSection(true);
     
-    // Set channel table headers
+    //设置频道表格中文列标题
     m_tableModel->setHeaderData(1, Qt::Horizontal, "频道ID");
     m_tableModel->setHeaderData(2, Qt::Horizontal, "名称");
     m_tableModel->setHeaderData(3, Qt::Horizontal, "分组");
@@ -245,7 +245,7 @@ void MainWindow::initModels()
     m_tableModel->setHeaderData(6, Qt::Horizontal, "备注");
     m_tableModel->setHeaderData(7, Qt::Horizontal, "Logo");
     
-    // Set monospace font for check address combo box
+    //设置检测地址下拉框为等宽字体
     QFont monoFont("Monaco", 11);
     monoFont.setStyleHint(QFont::Monospace);
     ui->cbCheckAddress->setFont(monoFont);
@@ -254,7 +254,7 @@ void MainWindow::initModels()
 
 void MainWindow::loadConfig()
 {
-    // Load config values to UI
+    //从配置加载值到界面控件
     ui->leUrlFirst->setText(m_config->httpUrl());
     ui->leFileUrl->setText(m_config->fileUrl());
     ui->leGroupAddress->setText(m_config->groupAddress());
@@ -267,7 +267,7 @@ void MainWindow::loadConfig()
     ui->leFCCUrl->setText(m_config->fccUrl());
     ui->cbUseFCC->setChecked(m_config->fccEnabled());
     
-    // Load selected groups
+    //加载已选分组
     QStringList groups = m_config->selectedGroups();
     ui->cbYangshi->setChecked(groups.contains("央视"));
     ui->cbWeishi->setChecked(groups.contains("卫视"));
@@ -283,6 +283,7 @@ void MainWindow::loadConfig()
 
 void MainWindow::saveConfig()
 {
+    //保存界面配置值
     m_config->setHttpUrl(ui->leUrlFirst->text());
     m_config->setFileUrl(ui->leFileUrl->text());
     m_config->setGroupAddress(ui->leGroupAddress->text());
@@ -295,7 +296,7 @@ void MainWindow::saveConfig()
     m_config->setFccUrl(ui->leFCCUrl->text());
     m_config->setFccEnabled(ui->cbUseFCC->isChecked());
     
-    // Save selected groups
+    //保存已选分组
     QStringList groups;
     if (ui->cbYangshi->isChecked()) groups << "央视";
     if (ui->cbWeishi->isChecked()) groups << "卫视";
@@ -506,6 +507,7 @@ void MainWindow::on_btnCheckStart_clicked(bool checked)
     bool normalType = ui->rbNormal->isChecked();
     int order = ui->rbOrderByIP->isChecked() ? 0 : 1;
     
+    //加载检测列表
     m_checkList = m_checkService->loadCheckList(normalType, order);
     m_checkIndex = 0;
     
@@ -514,7 +516,7 @@ void MainWindow::on_btnCheckStart_clicked(bool checked)
         return;
     }
     
-    // Populate combo box
+    //填充下拉框
     ui->cbCheckAddress->clear();
     for (int i = 0; i < m_checkList.size(); ++i) {
         QJsonObject obj = m_checkList[i].toObject();
@@ -523,7 +525,7 @@ void MainWindow::on_btnCheckStart_clicked(bool checked)
         QString ip = obj.value("ip").toString();
         int port = obj.value("port").toInt();
         
-        // Format: [序号] 频道名 | 类型 | IP:端口
+        //格式：[序号] 频道名 | 类型 | IP:端口
         QString text = QString("[%1] %2 | %3 | %4:%5")
             .arg(i + 1, 3, 10, QChar(' '))
             .arg(name, -15)
@@ -535,7 +537,7 @@ void MainWindow::on_btnCheckStart_clicked(bool checked)
     
     ui->lbCheckCount->setText(QString("1 / %1").arg(m_checkList.size()));
     
-    // Start first check
+    //开始第一个检测
     m_suppressComboSignal = true;
     ui->cbCheckAddress->setCurrentIndex(0);
     m_suppressComboSignal = false;
@@ -780,7 +782,7 @@ void MainWindow::onStreamProgress(int percent)
 void MainWindow::onStreamSucceeded(const Multimedia::StreamInfo &info,
                                     const QJsonObject &original)
 {
-    // Update UI with stream info
+    //更新流信息到界面
     ui->lbCheckWidth->setText(QString::number(info.width));
     ui->lbCheckHeight->setText(QString::number(info.height));
     ui->lbCheckFps->setText(QString::number(info.fps));
@@ -788,18 +790,18 @@ void MainWindow::onStreamSucceeded(const Multimedia::StreamInfo &info,
     ui->leCheckName->setText(original.value("name").toString());
     ui->leCheckNotes->setText(original.value("notes").toString());
     
-    // Update video preview
+    //更新视频预览
     if (info.frameData) {
         ui->openGLWidget->setData(info.frameData, info.width, info.height);
     }
     
-    // Update index label
+    //更新序号标签
     ui->lbCheckCount->setText(QString("%1 / %2").arg(m_checkIndex + 1).arg(m_checkList.size()));
     
-    // Update check address
+    //更新检测地址显示
     ui->lbCheckAddress->setPlainText(m_currentCheckUrl);
     
-    // Fetch logo
+    //获取频道台标
     QString name = original.value("name").toString();
     if (!name.isEmpty()) {
         QString logoBaseUrl = ui->leFileUrl->text();
@@ -843,6 +845,7 @@ void MainWindow::onExportFinished()
 
 void MainWindow::onMainTableHeaderDoubleClicked(int logicalIndex)
 {
+    //根据点击的列重新排序查询
     QString sql = "SELECT ti.id, ti.channel_id, ti.name, ti.\"group\", tsi.ip, tsi.port, "
                   "tsi.width, tsi.height, tsi.fps, st.name as type, tsi.notes "
                   "FROM tv_info ti "
@@ -850,35 +853,35 @@ void MainWindow::onMainTableHeaderDoubleClicked(int logicalIndex)
                   "JOIN source_type st ON st.id = tsi.type ";
     
     switch (logicalIndex) {
-    case 1: // channel_id
+    case 1: //频道ID
         sql += "ORDER BY ti.channel_id, tsi.width DESC, tsi.fps DESC";
         break;
-    case 2: // name
+    case 2: //名称
         sql += "ORDER BY ti.name, tsi.width DESC, tsi.fps DESC";
         break;
-    case 3: // group
+    case 3: //分组
         sql += "ORDER BY ti.\"group\", ti.channel_id, tsi.width DESC, tsi.fps DESC";
         break;
-    case 4: // ip
+    case 4: //IP地址
         sql += "ORDER BY json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[0]'),"
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[1]'),"
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[2]'),"
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[3]'),"
                "tsi.width DESC, tsi.fps DESC";
         break;
-    case 5: // port
+    case 5: //端口
         sql += "ORDER BY tsi.port, tsi.width DESC, tsi.fps DESC";
         break;
-    case 6: // width
+    case 6: //宽度
         sql += "ORDER BY tsi.width DESC, ti.channel_id, tsi.fps DESC";
         break;
-    case 7: // height
+    case 7: //高度
         sql += "ORDER BY tsi.height DESC, ti.channel_id, tsi.fps DESC";
         break;
-    case 8: // fps
+    case 8: //帧率
         sql += "ORDER BY tsi.fps DESC, ti.channel_id, tsi.width DESC";
         break;
-    case 9: // type
+    case 9: //类型
         sql += "ORDER BY tsi.type DESC, ti.channel_id, tsi.fps DESC";
         break;
     default:
@@ -891,12 +894,13 @@ void MainWindow::onMainTableHeaderDoubleClicked(int logicalIndex)
 
 void MainWindow::onChannelTableHeaderDoubleClicked(int logicalIndex)
 {
+    //切换排序列或切换排序方向
     bool change = m_lastChannelLogicalIndex != logicalIndex;
     if (change)
         m_lastChannelOrder = 0;
     
     switch (logicalIndex) {
-    case 1: // name
+    case 1: //名称
         if (change)
             m_tableModel->setSort(1, Qt::AscendingOrder);
         else {
@@ -909,7 +913,7 @@ void MainWindow::onChannelTableHeaderDoubleClicked(int logicalIndex)
             }
         }
         break;
-    case 2: // group
+    case 2: //分组
         if (change)
             m_tableModel->setSort(2, Qt::AscendingOrder);
         else {
@@ -922,7 +926,7 @@ void MainWindow::onChannelTableHeaderDoubleClicked(int logicalIndex)
             }
         }
         break;
-    case 3: // city
+    case 3: //城市
         if (change)
             m_tableModel->setSort(3, Qt::AscendingOrder);
         else {

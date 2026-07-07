@@ -14,9 +14,8 @@ DbSetupDialog::DbSetupDialog(QWidget *parent)
 {
     ui->setupUi(this);
     setWindowTitle("数据库设置");
-    // setWindowFlags(Qt::Window);
     
-    // 连接按钮信号
+    //连接按钮信号
     connect(ui->btnSelectConfig, &QPushButton::clicked, this, &DbSetupDialog::onSelectConfig);
     connect(ui->btnCreateConfig, &QPushButton::clicked, this, &DbSetupDialog::onCreateConfig);
     connect(ui->btnSelectDb, &QPushButton::clicked, this, &DbSetupDialog::onSelectDb);
@@ -82,7 +81,7 @@ void DbSetupDialog::onCreateDb(bool checked)
         m_dbPath = path;
         ui->leDbPath->setText(path);
         
-        // Copy default database
+        //复制默认数据库到指定路径
         QFile::copy(":/db_def.db", path);
         QFile::setPermissions(path, QFile::ReadOwner | QFile::WriteOwner);
     }

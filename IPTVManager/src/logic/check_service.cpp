@@ -16,7 +16,7 @@ CheckService::CheckService(Multimedia::StreamProbe *probe,
     , m_srcRepo(srcRepo)
     , m_chRepo(chRepo)
 {
-    // Connect probe signals
+    //连接流探测信号到业务层信号
     connect(m_probe, &Multimedia::StreamProbe::progressChanged,
             this, &CheckService::checkProgress);
     connect(m_probe, &Multimedia::StreamProbe::probeSucceeded,
@@ -32,6 +32,7 @@ QJsonArray CheckService::loadCheckList(bool normalType, int order)
 
 void CheckService::startCheck(const QJsonObject &source, const QString &url)
 {
+    //启动流探测
     m_probe->probe(url, source);
 }
 

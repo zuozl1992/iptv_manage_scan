@@ -18,19 +18,19 @@ bool CsvExporter::exportToFile(const QString &path, QAbstractItemModel *model)
     
     QTextStream stream(&file);
     
-    // Write header
+    //写入表头
     QStringList headers;
     for (int col = 0; col < model->columnCount(); ++col) {
         headers << model->headerData(col, Qt::Horizontal).toString();
     }
     stream << headers.join(",") << "\n";
     
-    // Write data
+    //写入数据行
     for (int row = 0; row < model->rowCount(); ++row) {
         QStringList values;
         for (int col = 0; col < model->columnCount(); ++col) {
             QString value = model->data(model->index(row, col)).toString();
-            // Escape commas and quotes
+            //转义逗号和引号
             if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
                 value = "\"" + value.replace("\"", "\"\"") + "\"";
             }

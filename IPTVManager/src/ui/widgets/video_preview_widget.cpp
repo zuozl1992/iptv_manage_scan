@@ -45,14 +45,14 @@ void VideoPreviewWidget::paintEvent(QPaintEvent *event)
         return;
     }
     
-    // Create QImage from BGRA data
+    //从BGRA数据创建QImage
     QImage image(m_data, m_width, m_height, m_width * 4, QImage::Format_ARGB32);
     
-    // Scale to widget size
+    //缩放到控件大小
     QPixmap pixmap = QPixmap::fromImage(image);
     QPixmap scaled = pixmap.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     
-    // Center the image
+    //居中绘制
     int x = (width() - scaled.width()) / 2;
     int y = (height() - scaled.height()) / 2;
     

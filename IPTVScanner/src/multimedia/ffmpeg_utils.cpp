@@ -10,11 +10,12 @@ double FfmpegUtils::r2d(AVRational r)
 
 int FfmpegUtils::inferSourceType(int width)
 {
+    //根据视频宽度推断源类型
     if (width >= 3840) return 4;  // 4K/8K
     if (width >= 1920) return 3;  // HD
     if (width >= 1280) return 2;  // SD
     if (width > 0) return 1;      // TS
-    return 0;                     // unknown
+    return 0;                     // 未知
 }
 
 QString FfmpegUtils::sourceTypeName(int type)

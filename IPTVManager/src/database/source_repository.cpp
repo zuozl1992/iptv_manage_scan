@@ -14,6 +14,7 @@ SourceRepository::SourceRepository(QSqlDatabase *db)
 bool SourceRepository::insertSource(const TvSource &source)
 {
     QSqlQuery query(*m_db);
+    //自动生成ID并插入信号源记录
     query.prepare(
         "INSERT INTO tv_source_info (id, tv_id, ip, port, width, height, fps, last_check_date, type, notes) "
         "VALUES (COALESCE((SELECT MAX(id)+1 FROM tv_source_info), 0), :tv_id, :ip, :port, :width, :height, :fps, :last_check_date, :type, :notes)");
@@ -62,6 +63,7 @@ bool SourceRepository::updateSource(const TvSource &source)
 
 bool SourceRepository::upsertSource(const TvSource &source)
 {
+    //按IP判断插入或更新
     if (existsByIp(source.ip)) {
         return updateSource(source);
     } else {
@@ -122,24 +124,28 @@ QJsonArray SourceRepository::getCheckList(bool normalType, int order)
 {
     QSqlQuery query(*m_db);
     
+    //构建联表查询SQL
     QString sql = "SELECT tsi.id, tsi.tv_id, tsi.ip, tsi.port, tsi.width, tsi.height, "
                   "tsi.fps, tsi.last_check_date, tsi.type, tsi.notes, ti.name, ti.channel_id "
                   "FROM tv_source_info tsi "
                   "JOIN tv_info ti ON ti.id = tsi.tv_id ";
     
+    //按类型过滤
     if (normalType) {
         sql += "WHERE tsi.type != 0 ";
     } else {
         sql += "WHERE tsi.type = 0 ";
     }
     
+    //按指定方式排序
     if (order == 0) {
-        // Sort by IP (natural order)
+        //按IP自然排序
         sql += "ORDER BY json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[0]'), "
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[1]'), "
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[2]'), "
                "json_extract('[' || replace(tsi.ip, '.', ',') || ']', '$[3]')";
     } else {
+        //按频道编号和分辨率排序
         sql += "ORDER BY ti.channel_id, (tsi.width * tsi.height) DESC";
     }
     
@@ -173,6 +179,7 @@ QJsonArray SourceRepository::getTvListByGroup(const QString &group, bool withLog
 {
     QSqlQuery query(*m_db);
     
+    //按分组查询频道列表
     QString sql;
     if (withLogo) {
         sql = "SELECT ti.channel_id, ti.name, tsi.ip, tsi.port, tsi.type, ti.logo_name "
@@ -221,6 +228,7 @@ QJsonArray SourceRepository::getTvListByGroup(const QString &group, bool withLog
 QStringList SourceRepository::getTestUrls(const QString &port)
 {
     QSqlQuery query(*m_db);
+    //查询测试频道（tv_id=0）并按IP自然排序
     query.prepare("SELECT ip, port FROM tv_source_info WHERE tv_id = 0 ORDER BY "
                   "json_extract('[' || replace(ip, '.', ',') || ']', '$[0]'), "
                   "json_extract('[' || replace(ip, '.', ',') || ']', '$[1]'), "
@@ -244,6 +252,7 @@ QStringList SourceRepository::getTestUrls(const QString &port)
 QSqlQueryModel *SourceRepository::createJoinedTableModel(QObject *parent)
 {
     QSqlQueryModel *model = new QSqlQueryModel(parent);
+    //创建频道-信号源联表查询模型
     model->setQuery(
         "SELECT ti.id, ti.channel_id, ti.name, ti.\"group\", tsi.ip, tsi.port, "
         "tsi.width, tsi.height, tsi.fps, st.name as type, tsi.notes "
@@ -253,6 +262,7 @@ QSqlQueryModel *SourceRepository::createJoinedTableModel(QObject *parent)
         "ORDER BY ti.channel_id, tsi.width DESC, tsi.fps DESC",
         *m_db);
     
+    //设置中文列标题
     model->setHeaderData(0, Qt::Horizontal, "ID");
     model->setHeaderData(1, Qt::Horizontal, "频道ID");
     model->setHeaderData(2, Qt::Horizontal, "频道");

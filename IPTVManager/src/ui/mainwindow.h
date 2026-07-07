@@ -42,6 +42,10 @@ class CheckService;
 
 namespace Iptv::Ui {
 
+/**
+ * @brief 主窗口
+ *        应用程序主界面，集成频道管理、信号源检测、文件导入导出等功能
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -52,102 +56,103 @@ public:
     ~MainWindow();
 
 signals:
+    /** @brief 请求重新配置信号（切换数据库时触发） */
     void requestReconfigure();
 
 private slots:
-    // File import
-    void on_btnSelectFile_clicked(bool checked = false);
-    void on_btnRun_clicked(bool checked = false);
+    // ---- 文件导入 ----
+    void on_btnSelectFile_clicked(bool checked = false);    ///< 选择导入文件
+    void on_btnRun_clicked(bool checked = false);           ///< 执行导入
 
-    // Scan file generation
-    void on_btnCreateScanFile_clicked(bool checked = false);
+    // ---- 扫描文件生成 ----
+    void on_btnCreateScanFile_clicked(bool checked = false);    ///< 生成扫描文件
 
-    // Export
-    void on_btnSaveM3u_clicked(bool checked = false);
-    void on_btnSaveTxt_clicked(bool checked = false);
-    void on_btnExp_clicked(bool checked = false);
+    // ---- 导出 ----
+    void on_btnSaveM3u_clicked(bool checked = false);   ///< 导出M3U文件
+    void on_btnSaveTxt_clicked(bool checked = false);   ///< 导出TXT文件
+    void on_btnExp_clicked(bool checked = false);       ///< 导出Excel文件
 
-    // Tab navigation
+    // ---- 页签切换 ----
     void on_tabWidget_currentChanged(int index);
 
-    // Stream checking
-    void on_btnCheckStart_clicked(bool checked = false);
-    void on_btnCheckNext_clicked(bool checked = false);
-    void on_btnCheckPrev_clicked(bool checked = false);
-    void on_btnCheckRecheck_clicked(bool checked = false);
-    void on_btnCheckSubmit_clicked(bool checked = false);
-    void on_btnCheckRemove_clicked(bool checked = false);
-    void on_cbCheckAddress_currentIndexChanged(int index);
+    // ---- 流检测 ----
+    void on_btnCheckStart_clicked(bool checked = false);    ///< 开始检测
+    void on_btnCheckNext_clicked(bool checked = false);     ///< 下一个
+    void on_btnCheckPrev_clicked(bool checked = false);     ///< 上一个
+    void on_btnCheckRecheck_clicked(bool checked = false);  ///< 重新检测
+    void on_btnCheckSubmit_clicked(bool checked = false);   ///< 提交修改
+    void on_btnCheckRemove_clicked(bool checked = false);   ///< 删除信号源
+    void on_cbCheckAddress_currentIndexChanged(int index);  ///< 切换信号源
 
-    // Reset
-    void on_btnReset_clicked(bool checked = false);
-    void on_btnReset2_clicked(bool checked = false);
+    // ---- 重置 ----
+    void on_btnReset_clicked(bool checked = false);     ///< 重置信号源数据
+    void on_btnReset2_clicked(bool checked = false);    ///< 重置频道数据
 
-    // Misc
-    void on_btnInfo_clicked(bool checked = false);
-    void on_btnOpenScan_clicked(bool checked = false);
-    void on_cbRemoveRepeat_clicked(bool checked);
+    // ---- 其他 ----
+    void on_btnInfo_clicked(bool checked = false);      ///< 显示帮助信息
+    void on_btnOpenScan_clicked(bool checked = false);  ///< 打开扫描软件
+    void on_cbRemoveRepeat_clicked(bool checked);       ///< 切换合并频道选项
 
-    // Thread callbacks
-    void onStreamProgress(int percent);
+    // ---- 异步回调 ----
+    void onStreamProgress(int percent);                 ///< 流检测进度
     void onStreamSucceeded(const Iptv::Multimedia::StreamInfo &info,
-                           const QJsonObject &original);
-    void onStreamFailed(const QString &error);
+                           const QJsonObject &original);///< 流检测成功
+    void onStreamFailed(const QString &error);          ///< 流检测失败
 
-    void onExportProgress(int percent);
-    void onExportFinished();
+    void onExportProgress(int percent);                 ///< 导出进度
+    void onExportFinished();                            ///< 导出完成
 
-    // Logo
-    void onLogoReady(const QPixmap &pixmap);
-    void onLogoFailed(const QString &error);
+    // ---- 台标 ----
+    void onLogoReady(const QPixmap &pixmap);    ///< 台标加载成功
+    void onLogoFailed(const QString &error);    ///< 台标加载失败
 
-    // Table sorting
-    void onMainTableHeaderDoubleClicked(int logicalIndex);
-    void onChannelTableHeaderDoubleClicked(int logicalIndex);
+    // ---- 表格排序 ----
+    void onMainTableHeaderDoubleClicked(int logicalIndex);      ///< 主表头双击排序
+    void onChannelTableHeaderDoubleClicked(int logicalIndex);   ///< 频道表头双击排序
 
-    // Timer
+    // ---- 定时器 ----
     void onHideTimerTimeout();
 
 private:
-    void setupConnections();
-    void initModels();
-    void loadConfig();
-    void saveConfig();
-    void refreshMainTable();
-    void refreshChannelModel();
+    void setupConnections();                ///< 初始化信号槽连接
+    void initModels();                      ///< 初始化数据模型
+    void loadConfig();                      ///< 加载配置
+    void saveConfig();                      ///< 保存配置
+    void refreshMainTable();                ///< 刷新主表格
+    void refreshChannelModel();             ///< 刷新频道模型
 
-    Export::ExportOptions buildExportOptions() const;
+    Export::ExportOptions buildExportOptions() const;   ///< 构建导出选项
 
     ::Ui::MainWindow *ui;
 
-    // Services
-    Iptv::Core::AppConfig *m_config;
-    Iptv::Database::DatabaseManager *m_dbManager;
-    Iptv::Database::ChannelRepository *m_channelRepo;
-    Iptv::Database::SourceRepository *m_sourceRepo;
-    Iptv::Network::HttpClient *m_httpClient;
-    Iptv::Network::LogoFetcher *m_logoFetcher;
-    Iptv::Multimedia::StreamProbe *m_streamProbe;
-    Iptv::Export::XlsxExporter *m_xlsxExporter;
-    Iptv::Logic::ChannelService *m_channelService;
-    Iptv::Logic::CheckService *m_checkService;
+    // ==================== 服务组件 ====================
+    Iptv::Core::AppConfig *m_config;                ///< 应用配置
+    Iptv::Database::DatabaseManager *m_dbManager;   ///< 数据库管理器
+    Iptv::Database::ChannelRepository *m_channelRepo;   ///< 频道数据仓库
+    Iptv::Database::SourceRepository *m_sourceRepo;     ///< 信号源数据仓库
+    Iptv::Network::HttpClient *m_httpClient;        ///< HTTP客户端
+    Iptv::Network::LogoFetcher *m_logoFetcher;      ///< 台标获取器
+    Iptv::Multimedia::StreamProbe *m_streamProbe;   ///< 流探测器
+    Iptv::Export::XlsxExporter *m_xlsxExporter;     ///< Excel导出器
+    Iptv::Logic::ChannelService *m_channelService;  ///< 频道业务服务
+    Iptv::Logic::CheckService *m_checkService;      ///< 检测业务服务
 
-    // Models
-    QSqlQueryModel *m_queryModel;
-    QSqlTableModel *m_tableModel;
+    // ==================== 数据模型 ====================
+    QSqlQueryModel *m_queryModel;       ///< 频道查询模型
+    QSqlTableModel *m_tableModel;       ///< 信号源表格模型
 
-    // Stream check state
-    QJsonArray m_checkList;
-    int m_checkIndex = -1;
-    bool m_checkDataChange = false;
-    bool m_suppressComboSignal = false;
-    QString m_currentCheckUrl;
+    // ==================== 流检测状态 ====================
+    QJsonArray m_checkList;             ///< 检测列表
+    int m_checkIndex = -1;              ///< 当前检测索引
+    bool m_checkDataChange = false;     ///< 检测数据是否变更
+    bool m_suppressComboSignal = false; ///< 是否抑制下拉框信号
+    QString m_currentCheckUrl;          ///< 当前检测URL
 
-    // UI state
-    int m_lastChannelLogicalIndex = -1;
-    int m_lastChannelOrder = 0;
+    // ==================== UI状态 ====================
+    int m_lastChannelLogicalIndex = -1; ///< 频道表最后排序列
+    int m_lastChannelOrder = 0;         ///< 频道表排序方向
 
-    QTimer *m_hideTimer;
+    QTimer *m_hideTimer;                ///< 隐藏提示定时器
 };
 
 } // namespace Iptv::Ui

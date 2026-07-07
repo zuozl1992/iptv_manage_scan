@@ -8,6 +8,7 @@ AppConfig *AppConfig::s_instance = nullptr;
 
 AppConfig *AppConfig::instance()
 {
+    //单例模式：延迟初始化
     if (!s_instance) {
         s_instance = new AppConfig();
     }
@@ -24,6 +25,7 @@ void AppConfig::init(const QString &configPath)
     if (m_settings) {
         delete m_settings;
     }
+    //使用INI格式的QSettings管理配置
     m_settings = new QSettings(configPath, QSettings::IniFormat, this);
 }
 

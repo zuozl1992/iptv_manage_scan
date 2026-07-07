@@ -29,6 +29,7 @@ QVariant ScanResultModel::data(const QModelIndex &index, int role) const
 
     const Multimedia::StreamInfo &info = m_results.at(index.row());
 
+    //返回各列的显示数据
     if (role == Qt::DisplayRole) {
         switch (index.column()) {
         case ColUrl:
@@ -52,6 +53,7 @@ QVariant ScanResultModel::headerData(int section, Qt::Orientation orientation, i
     if (role != Qt::DisplayRole)
         return {};
 
+    //设置中文列标题
     if (orientation == Qt::Horizontal) {
         switch (section) {
         case ColUrl:
@@ -72,6 +74,7 @@ QVariant ScanResultModel::headerData(int section, Qt::Orientation orientation, i
 
 void ScanResultModel::addResult(const Multimedia::StreamInfo &info)
 {
+    //通知视图插入新行
     beginInsertRows(QModelIndex(), m_results.size(), m_results.size());
     m_results.append(info);
     endInsertRows();
@@ -79,6 +82,7 @@ void ScanResultModel::addResult(const Multimedia::StreamInfo &info)
 
 void ScanResultModel::clear()
 {
+    //通知视图重置模型
     beginResetModel();
     m_results.clear();
     endResetModel();

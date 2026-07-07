@@ -9,7 +9,7 @@ bool SchemaManager::ensureSchema(QSqlDatabase &db)
 {
     QSqlQuery query(db);
     
-    // Create source_type table
+    //创建信号源类型表
     if (!query.exec(
         "CREATE TABLE IF NOT EXISTS source_type ("
         "  id INTEGER NOT NULL PRIMARY KEY,"
@@ -19,7 +19,7 @@ bool SchemaManager::ensureSchema(QSqlDatabase &db)
         return false;
     }
     
-    // Create tv_info table
+    //创建频道信息表
     if (!query.exec(
         "CREATE TABLE IF NOT EXISTS tv_info ("
         "  id INTEGER NOT NULL PRIMARY KEY,"
@@ -36,7 +36,7 @@ bool SchemaManager::ensureSchema(QSqlDatabase &db)
         return false;
     }
     
-    // Create tv_source_info table
+    //创建信号源信息表
     if (!query.exec(
         "CREATE TABLE IF NOT EXISTS tv_source_info ("
         "  id INTEGER NOT NULL PRIMARY KEY,"
@@ -59,7 +59,7 @@ bool SchemaManager::ensureSchema(QSqlDatabase &db)
         return false;
     }
     
-    // Insert default source types if empty
+    //检查是否需要插入默认信号源类型数据
     query.exec("SELECT COUNT(*) FROM source_type");
     if (query.next() && query.value(0).toInt() == 0) {
         createDefaultData(db);
@@ -71,14 +71,14 @@ bool SchemaManager::ensureSchema(QSqlDatabase &db)
 int SchemaManager::currentVersion(QSqlDatabase &db)
 {
     Q_UNUSED(db)
-    return 1;  // Current schema version
+    return 1;  //当前模式版本
 }
 
 bool SchemaManager::createDefaultData(QSqlDatabase &db)
 {
     QSqlQuery query(db);
     
-    // Insert default source types
+    //插入默认信号源类型
     QStringList types = {"TS", "SD", "HD", "4K", "8K"};
     for (int i = 0; i < types.size(); ++i) {
         query.prepare("INSERT INTO source_type (id, name) VALUES (:id, :name)");

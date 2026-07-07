@@ -19,6 +19,7 @@ bool M3uExporter::exportToFile(const QString &path, const QJsonArray &channelLis
     }
     
     QTextStream stream(&file);
+    //写入M3U文件头
     stream << "#EXTM3U\n";
     
     QStringList processedNames;
@@ -34,7 +35,7 @@ bool M3uExporter::exportToFile(const QString &path, const QJsonArray &channelLis
         QString logoName = ch.value("logo_name").toString();
         int type = ch.value("type").toInt();
         
-        // Skip duplicate channels if mergeChannels is enabled
+        //合并模式下跳过重复频道
         if (opts.mergeChannels) {
             if (processedNames.contains(name)) {
                 continue;
@@ -42,7 +43,7 @@ bool M3uExporter::exportToFile(const QString &path, const QJsonArray &channelLis
             processedNames.append(name);
         }
         
-        // Build display name
+        //构建显示名称（可选添加高清后缀）
         QString displayName = name;
         if (opts.addHdSuffix) {
             QString typeName;
@@ -54,7 +55,7 @@ bool M3uExporter::exportToFile(const QString &path, const QJsonArray &channelLis
             displayName += typeName;
         }
         
-        // Build URL
+        //构建流媒体URL
         QString url = QString("%1/%2/%3:%4")
             .arg(opts.urlPrefix, opts.urlType, ip)
             .arg(port);
@@ -63,9 +64,10 @@ bool M3uExporter::exportToFile(const QString &path, const QJsonArray &channelLis
             url += "?fcc=" + opts.fccUrl;
         }
         
-        // Write entry
+        //写入EXTINF标签
         stream << "#EXTINF:-1 tvg-id=\"" << channelId << "\" tvg-name=\"" << name << "\"";
         
+        //可选添加台标URL
         if (opts.addLogo && !logoName.isEmpty() && !opts.logoBaseUrl.isEmpty()) {
             stream << " tvg-logo=\"" << opts.logoBaseUrl << "/" << logoName << "\"";
         }
@@ -86,7 +88,7 @@ bool M3uExporter::exportToDirectory(const QString &dirPath, const QJsonArray &ch
         dir.mkpath(".");
     }
     
-    // Group channels by channel_id
+    //按channel_id分组
     QMap<int, QJsonArray> channelGroups;
     for (const QJsonValue &val : channelList) {
         QJsonObject ch = val.toObject();
@@ -94,7 +96,7 @@ bool M3uExporter::exportToDirectory(const QString &dirPath, const QJsonArray &ch
         channelGroups[channelId].append(ch);
     }
     
-    // Export each channel to separate file
+    //每个频道导出为独立M3U文件
     for (auto it = channelGroups.begin(); it != channelGroups.end(); ++it) {
         const QJsonArray &channels = it.value();
         if (channels.isEmpty()) continue;
@@ -104,6 +106,7 @@ bool M3uExporter::exportToDirectory(const QString &dirPath, const QJsonArray &ch
         QString name = first.value("name").toString();
         int type = first.value("type").toInt();
         
+        //根据类型生成文件名后缀
         QString typeName;
         switch (type) {
         case 0: typeName = "TS"; break;

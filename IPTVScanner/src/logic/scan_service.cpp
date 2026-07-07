@@ -42,6 +42,7 @@ void ScanService::start()
     if (isRunning())
         return;
 
+    //重置计数器和状态
     m_pos = 0;
     m_okCount = 0;
     m_errorCount = 0;
@@ -50,12 +51,13 @@ void ScanService::start()
     m_ipCheck.clear();
     m_semaphore.release(m_threadMax);
 
-    // Process URLs in a separate thread to avoid blocking the UI
+    //在独立线程中处理URL列表，避免阻塞UI
     QThread::create([this]() {
         for (int i = 0; i < m_urlList.length(); i++) {
             if ((int)m_exitFlag)
                 break;
 
+            //获取信号量（控制并发数）
             m_semaphore.acquire();
 
             if ((int)m_exitFlag) {
@@ -66,6 +68,7 @@ void ScanService::start()
             QString url = m_urlList.at(i);
             emit currentUrlChanged(url);
 
+            //自动跳过模式：检查该IP是否已有成功记录
             if (m_autoStep) {
                 QString ip = getIpFromUrl(url);
                 bool step = m_ipCheck.value(ip, false);
@@ -79,6 +82,7 @@ void ScanService::start()
                 }
             }
 
+            //创建并启动探测器
             Multimedia::StreamProbe *probe = new Multimedia::StreamProbe();
             probe->setUrl(url);
             probe->setTimeout(m_timeout);
@@ -97,7 +101,7 @@ void ScanService::start()
             probe->start();
         }
 
-        // Wait for all active probes to finish
+        //等待所有活跃探测器完成
         while ((int)m_activeCount > 0) {
             QThread::msleep(10);
         }
@@ -108,8 +112,10 @@ void ScanService::start()
 
 void ScanService::stop()
 {
+    //设置退出标志
     m_exitFlag = 1;
 
+    //等待所有探测器退出
     m_mutex.lock();
     for (auto *probe : m_probes) {
         probe->quit();
@@ -129,6 +135,7 @@ void ScanService::onProbeSucceeded(const Multimedia::StreamInfo &info)
     if (!probe)
         return;
 
+    //记录成功IP（用于自动跳过）
     QString ip = getIpFromUrl(info.url);
     m_ipCheck.insert(ip, true);
 
@@ -139,6 +146,7 @@ void ScanService::onProbeSucceeded(const Multimedia::StreamInfo &info)
     emit scanProgress((int)m_pos, m_urlList.length(),
                      (int)m_okCount, (int)m_errorCount);
 
+    //清理探测器资源
     m_mutex.lock();
     m_probes.removeOne(probe);
     m_mutex.unlock();
@@ -163,6 +171,7 @@ void ScanService::onProbeFailed(const QString &error)
     emit scanProgress((int)m_pos, m_urlList.length(),
                      (int)m_okCount, (int)m_errorCount);
 
+    //清理探测器资源
     m_mutex.lock();
     m_probes.removeOne(probe);
     m_mutex.unlock();

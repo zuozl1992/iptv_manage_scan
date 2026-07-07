@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     app.setApplicationVersion("2.0.0");
     app.setOrganizationName("IPTVScanner");
 
-    // 加载翻译
+    //加载翻译文件
     QTranslator *translator = new QTranslator(&app);
     bool loaded = false;
     const QStringList uiLanguages = QLocale::system().uiLanguages();
@@ -31,11 +31,11 @@ int main(int argc, char *argv[])
     }
     app.installTranslator(translator);
 
-    // 初始化日志
+    //初始化日志系统
     Iptv::Core::LogManager::init();
     qInfo() << "Application starting...";
 
-    // 初始化配置
+    //初始化配置文件
     QString configDir = QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation);
     QDir().mkpath(configDir);
     QString configPath = configDir + "/IPTVScanner.ini";

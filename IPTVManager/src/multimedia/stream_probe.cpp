@@ -33,7 +33,7 @@ void StreamProbe::run()
     
     VideoDecoder decoder;
     
-    // Open stream with retry for FPS detection
+    //带重试的流打开（用于FPS检测）
     int retryCount = 0;
     bool opened = false;
     qDebug() << "111111" << m_url;
@@ -46,6 +46,7 @@ void StreamProbe::run()
             break;
         }
         
+        //查找视频流
         if (!decoder.findVideoStream()) {
             emit probeFailed(tr("没有获取到视频流"));
             return;
@@ -54,6 +55,7 @@ void StreamProbe::run()
         emit progressChanged(20);
         
         StreamInfo info = decoder.streamInfo();
+        //FPS为0时重试
         if (info.fps <= 0) {
             decoder.close();
             retryCount++;
@@ -71,7 +73,7 @@ void StreamProbe::run()
     
     emit progressChanged(40);
     
-    // Decode keyframe
+    //解码关键帧
     if (!decoder.decodeKeyFrame()) {
         emit probeFailed(tr("解码失败"));
         return;
@@ -79,15 +81,15 @@ void StreamProbe::run()
     
     emit progressChanged(90);
     
-    // Get results
+    //获取解码结果
     StreamInfo info = decoder.streamInfo();
     uchar *frameData = decoder.takeFrameData();
     
-    // Infer source type from width
+    //根据视频宽度推断源类型
     int oldType = m_sourceInfo.value("type").toInt();
     int type = FfmpegUtils::inferSourceType(info.width);
     if (oldType == 0) {
-        type = 0;  // Keep as test/unknown
+        type = 0;  //保持测试/未知类型
     }
     
     info.sourceType = type;

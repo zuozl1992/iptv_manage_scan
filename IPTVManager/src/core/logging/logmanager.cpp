@@ -11,6 +11,7 @@ namespace Iptv::Core {
 
 QString LogManager::s_logFilePath;
 
+//定义日志分类
 Q_LOGGING_CATEGORY(lcDb, "iptv.db")
 Q_LOGGING_CATEGORY(lcStream, "iptv.stream")
 Q_LOGGING_CATEGORY(lcExport, "iptv.export")
@@ -26,9 +27,11 @@ void LogManager::init(const QString &logDir)
     
     QDir().mkpath(dir);
     
+    //使用时间戳生成日志文件名
     QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");
     s_logFilePath = dir + "/iptv_" + timestamp + ".log";
     
+    //安装自定义消息处理器
     qInstallMessageHandler(messageHandler);
     
     qInfo() << "Logging initialized:" << s_logFilePath;
@@ -37,8 +40,7 @@ void LogManager::init(const QString &logDir)
 void LogManager::setLevel(QtMsgType level)
 {
     Q_UNUSED(level)
-    // Qt logging categories handle filtering
-    // This could be extended to set environment variables
+    //Qt日志分类处理过滤
 }
 
 QString LogManager::logFilePath()
@@ -48,11 +50,13 @@ QString LogManager::logFilePath()
 
 void LogManager::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
+    //线程安全的日志写入
     static QMutex mutex;
     QMutexLocker locker(&mutex);
     
     QString timestamp = QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss.zzz");
     
+    //格式化日志级别
     QString levelStr;
     switch (type) {
     case QtDebugMsg:    levelStr = "DEBUG"; break;
@@ -69,7 +73,7 @@ void LogManager::messageHandler(QtMsgType type, const QMessageLogContext &contex
         .arg(category)
         .arg(msg);
     
-    // Write to file
+    //写入日志文件
     if (!s_logFilePath.isEmpty()) {
         QFile file(s_logFilePath);
         if (file.open(QIODevice::Append | QIODevice::Text)) {
@@ -79,7 +83,7 @@ void LogManager::messageHandler(QtMsgType type, const QMessageLogContext &contex
         }
     }
     
-    // Also write to stderr for debugging
+    //同时输出到标准错误流
     QTextStream errStream(stderr);
     errStream << logLine << "\n";
     errStream.flush();

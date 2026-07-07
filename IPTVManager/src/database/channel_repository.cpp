@@ -15,6 +15,7 @@ int ChannelRepository::insertChannel(const QString &name, const QString &group,
                                       const QString &notes, const QString &logoName)
 {
     QSqlQuery query(*m_db);
+    //自动生成ID并插入频道记录
     query.prepare(
         "INSERT INTO tv_info (id, name, \"group\", city, describe, notes, logo_name) "
         "VALUES (COALESCE((SELECT MAX(id)+1 FROM tv_info), 0), :name, :group, :city, :describe, :notes, :logo_name)");
@@ -170,6 +171,7 @@ QSqlQueryModel *ChannelRepository::createTableModel(QObject *parent)
     QSqlQueryModel *model = new QSqlQueryModel(parent);
     model->setQuery("SELECT id, channel_id, name, \"group\", city, describe, notes, logo_name FROM tv_info ORDER BY channel_id", *m_db);
     
+    //设置中文列标题
     model->setHeaderData(0, Qt::Horizontal, "ID");
     model->setHeaderData(1, Qt::Horizontal, "频道");
     model->setHeaderData(2, Qt::Horizontal, "分组");

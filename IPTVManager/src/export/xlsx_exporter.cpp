@@ -21,8 +21,8 @@ bool XlsxExporter::exportToFile(const QString &path,
     Q_UNUSED(queryModel)
     Q_UNUSED(tableModel)
     
-    // TODO: Implement with QXlsx library
-    // Download from https://github.com/QtExcel/QXlsx
+    //TODO: 需要集成QXlsx库实现
+    //下载地址：https://github.com/QtExcel/QXlsx
     qWarning() << "XLSX export not available - QXlsx library not installed";
     return false;
 }
@@ -38,7 +38,7 @@ bool XlsxExporter::writeSheet(const QString &sheetName, QAbstractItemModel *mode
     Q_UNUSED(model)
     Q_UNUSED(docPtr)
     
-    // TODO: Implement with QXlsx library
+    //TODO: 需要集成QXlsx库实现
     return false;
 }
 
