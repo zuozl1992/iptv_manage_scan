@@ -24,23 +24,23 @@ This project uses MiMoCode (Xiaomi's mimo-v2.5-pro AI model) for code generation
 
 **Channel Edit**
 
-![Channel Edit](assets/page_1.png)
+![Channel Edit](docs/assets/page_1.png)
 
 **Channel Browse**
 
-![Channel Browse](assets/page_2.png)
+![Channel Browse](docs/assets/page_2.png)
 
 **Channel Check**
 
-![Channel Check](assets/page_3.png)
+![Channel Check](docs/assets/page_3.png)
 
 **Channel Scan**
 
-![Channel Scan](assets/page_4.png)
+![Channel Scan](docs/assets/page_4.png)
 
 **Settings**
 
-![Settings](assets/page_5.png)
+![Settings](docs/assets/page_5.png)
 
 </div>
 
