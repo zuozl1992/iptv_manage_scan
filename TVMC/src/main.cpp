@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     app.setApplicationName("TVMC");
-    app.setApplicationVersion("2.2.0");
+    app.setApplicationVersion("2.2.1");
     app.setOrganizationName("TVMC");
 
     //设置Material样式

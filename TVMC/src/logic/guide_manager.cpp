@@ -23,11 +23,17 @@ GuideManager::GuideManager(Network::HttpClient *httpClient, QObject *parent)
 void GuideManager::init(const QString &configDir)
 {
     if (downloadGuide(configDir)) {
-        QString filePath = configDir + "/epg_guide.xml.gz";
-        if (!QFile::exists(filePath)) {
-            filePath = configDir + "/epg_guide.xml";
+        //优先使用解压后的xml文件
+        QString xmlPath = configDir + "/epg_guide.xml";
+        QString gzPath = configDir + "/epg_guide.xml.gz";
+        
+        if (QFile::exists(xmlPath)) {
+            parseGuide(xmlPath);
+        } else if (QFile::exists(gzPath)) {
+            parseGuide(gzPath);
+        } else {
+            qWarning() << "No guide file found in:" << configDir;
         }
-        parseGuide(filePath);
     }
 }
 
@@ -121,7 +127,7 @@ bool GuideManager::downloadGuide(const QString &configDir)
 void GuideManager::parseGuide(const QString &filePath)
 {
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    if (!file.open(QIODevice::ReadOnly)) {
         qWarning() << "Failed to open guide file:" << filePath;
         return;
     }
@@ -129,8 +135,22 @@ void GuideManager::parseGuide(const QString &filePath)
     qInfo() << "Parsing guide file:" << filePath;
     m_channelIdMap.clear();
 
+    //读取文件内容并处理编码
+    QByteArray fileData = file.readAll();
+    file.close();
+
+    //检测并处理编码（可能是UTF-8或GBK）
+    QString content;
+    if (fileData.startsWith("<?xml") || fileData.startsWith("\xef\xbb\xbf")) {
+        //UTF-8编码（可能有BOM）
+        content = QString::fromUtf8(fileData);
+    } else {
+        //尝试GBK编码
+        content = QString::fromLocal8Bit(fileData);
+    }
+
     //解析XML格式的EPG指南
-    QXmlStreamReader xml(&file);
+    QXmlStreamReader xml(content);
     QString currentChannelId;
     QString currentDisplayName;
 

@@ -274,6 +274,23 @@ Welcome to submit Issues and Pull Requests!
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Create Pull Request
 
+## 📝 Version History
+
+### v2.2.1 (2026-07-21)
+
+- Fix Windows Administrator account startup issue
+- Fix Windows path format issue
+- Fix EPG guide parsing encoding issue (support GBK/UTF-8)
+- Clean up unused code files
+
+### v2.2.0 (2026-07-14)
+
+- Merge IPTVManager and IPTVScanner into TVMC
+- Support Chinese/English language switching
+- XLS/CSV export functionality
+- Multi-format import (.mc/.m3u/.txt)
+- Channel ID auto-sync (EPG guide)
+
 ## 📄 License
 
 This project is licensed under the [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0).

@@ -12,7 +12,7 @@ ApplicationWindow {
     visible: true
     width: 880
     height: 650
-    title: qsTr("TVMC - IPTV自动扫描&管理工具 V2.2.0")
+    title: qsTr("TVMC - IPTV自动扫描&管理工具 V2.2.1")
     Material.theme: Material.Light
     Material.primary: "#1976D2"
     Material.accent: "#FF6F00"
@@ -123,7 +123,7 @@ ApplicationWindow {
                 readOnly: true
                 wrapMode: TextArea.Wrap
                 font.pixelSize: 12
-                text: "TVMC v2.2.0 使用说明\n" +
+                text: "TVMC v2.2.1 使用说明\n" +
                       "========================\n\n" +
                       "【频道源浏览】\n" +
                       "查看所有频道和信号源信息。\n" +

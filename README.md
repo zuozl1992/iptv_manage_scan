@@ -274,6 +274,23 @@ http://192.168.1.1:12345/udp/239.49.0.{[1-255]}:{6000#[8000-9999]}
 4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 创建 Pull Request
 
+## 📝 版本历史
+
+### v2.2.1 (2026-07-21)
+
+- 修复 Windows Administrator 账户启动问题
+- 修复 Windows 路径格式问题
+- 修复 EPG 指南解析编码问题（支持 GBK/UTF-8）
+- 清理未使用的代码文件
+
+### v2.2.0 (2026-07-14)
+
+- 合并 IPTVManager 和 IPTVScanner 为 TVMC
+- 支持中英文语言切换
+- XLS/CSV 导出功能
+- 多格式导入（.mc/.m3u/.txt）
+- 频道ID自动同步（EPG 指南）
+
 ## 📄 许可证
 
 本项目采用 [GNU General Public License v3.0](https://www.gnu.org/licenses/gpl-3.0) 许可证。

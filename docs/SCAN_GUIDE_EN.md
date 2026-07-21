@@ -316,5 +316,5 @@ After importing, you can export to:
 
 ---
 
-**Version**: TVMC v2.2.0  
+**Version**: TVMC v2.2.1  
 **Updated**: 2026-07-15
